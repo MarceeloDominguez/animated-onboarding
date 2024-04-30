@@ -10,6 +10,17 @@ import {
   Pressable,
   StatusBar,
 } from "react-native";
+import {
+  Directions,
+  Gesture,
+  GestureDetector,
+} from "react-native-gesture-handler";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  SlideInRight,
+  SlideOutLeft,
+} from "react-native-reanimated";
 
 const { height: HEIGHT_SCREEN, width: WIDTH_SCREEN } = Dimensions.get("screen");
 
@@ -38,15 +49,32 @@ export default function Onboarding() {
 
   const data = onboardingSteps[screenIndex];
 
-  const isLastScreen = screenIndex === onboardingSteps.length - 1;
   const onContinue = () => {
+    const isLastScreen = screenIndex === onboardingSteps.length - 1;
     if (isLastScreen) {
-      //router.replace("/home");
+      router.navigate("/home");
       setScreenIndex(0);
     } else {
       setScreenIndex(screenIndex + 1);
     }
   };
+
+  const onBack = () => {
+    const isFirstScreen = screenIndex === 0;
+    if (isFirstScreen) {
+      setScreenIndex(0);
+    } else {
+      setScreenIndex(screenIndex - 1);
+    }
+  };
+
+  const swipeForward = Gesture.Fling()
+    .direction(Directions.LEFT)
+    .onEnd(onContinue);
+
+  const swipeBack = Gesture.Fling().direction(Directions.RIGHT).onEnd(onBack);
+
+  const swipes = Gesture.Simultaneous(swipeBack, swipeForward);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -64,23 +92,45 @@ export default function Onboarding() {
           />
         ))}
       </View>
-      <View style={styles.containerImage}>
-        <Image source={data.image} style={styles.image} />
-      </View>
-      <View style={styles.pageContent}>
-        <Text style={styles.title}>{data.title}</Text>
-        <Text style={styles.description}>{data.description}</Text>
-        <View style={styles.wrapperButton}>
-          <Link href={"/home"} asChild>
-            <Pressable style={styles.buttonSkip}>
-              <Text style={styles.textButton}>Skip</Text>
-            </Pressable>
-          </Link>
-          <Pressable style={styles.buttonNext} onPress={onContinue}>
-            <Text style={[styles.textButton, { color: "#1E1E1E" }]}>Next</Text>
-          </Pressable>
+      <GestureDetector gesture={swipes}>
+        <View style={styles.wrapperPage} key={screenIndex}>
+          <Animated.View
+            style={styles.containerImage}
+            entering={FadeIn}
+            exiting={FadeOut}
+          >
+            <Image source={data.image} style={styles.image} />
+          </Animated.View>
+          <View style={styles.pageContent}>
+            <Animated.Text
+              style={styles.title}
+              entering={SlideInRight}
+              exiting={SlideOutLeft}
+            >
+              {data.title}
+            </Animated.Text>
+            <Animated.Text
+              style={styles.description}
+              entering={SlideInRight.delay(50)}
+              exiting={SlideOutLeft}
+            >
+              {data.description}
+            </Animated.Text>
+            <View style={styles.wrapperButton}>
+              <Link href={"/home"} asChild>
+                <Pressable style={styles.buttonSkip}>
+                  <Text style={styles.textButton}>Skip</Text>
+                </Pressable>
+              </Link>
+              <Pressable style={styles.buttonNext} onPress={onContinue}>
+                <Text style={[styles.textButton, { color: "#1E1E1E" }]}>
+                  Next
+                </Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
-      </View>
+      </GestureDetector>
     </SafeAreaView>
   );
 }
@@ -89,6 +139,10 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#1E1E1E",
     flex: 1,
+  },
+  wrapperPage: {
+    flex: 1,
+    justifyContent: "space-between",
   },
   containerImage: {
     marginTop: 14,
@@ -102,12 +156,12 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 14,
     marginBottom: 30,
-    marginTop: "auto",
+    // marginTop: "auto",
   },
   title: {
     color: "#FBFBFB",
     fontWeight: "bold",
-    fontSize: 26,
+    fontSize: 30,
     textAlign: "center",
   },
   description: {
@@ -143,7 +197,7 @@ const styles = StyleSheet.create({
     color: "#FBFBFB",
   },
   stepIndicatorContainer: {
-    marginTop: 50,
+    marginTop: 45,
     flexDirection: "row",
     gap: 5,
     paddingHorizontal: 20,
