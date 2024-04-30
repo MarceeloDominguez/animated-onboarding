@@ -41,7 +41,7 @@ export default function Onboarding() {
   const isLastScreen = screenIndex === onboardingSteps.length - 1;
   const onContinue = () => {
     if (isLastScreen) {
-      router.replace("/home");
+      //router.replace("/home");
       setScreenIndex(0);
     } else {
       setScreenIndex(screenIndex + 1);
@@ -51,8 +51,18 @@ export default function Onboarding() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <View style={{ marginTop: 50, backgroundColor: "orange" }}>
-        <Text>Lineas</Text>
+      <View style={styles.stepIndicatorContainer}>
+        {onboardingSteps.map((item, index) => (
+          <View
+            key={index}
+            style={[
+              styles.stepIndicator,
+              {
+                backgroundColor: index === screenIndex ? "#D7FC70" : "#808080",
+              },
+            ]}
+          />
+        ))}
       </View>
       <View style={styles.containerImage}>
         <Image source={data.image} style={styles.image} />
@@ -131,5 +141,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "bold",
     color: "#FBFBFB",
+  },
+  stepIndicatorContainer: {
+    marginTop: 50,
+    flexDirection: "row",
+    gap: 5,
+    paddingHorizontal: 20,
+  },
+  stepIndicator: {
+    height: 3,
+    flex: 1,
+    borderRadius: 3 / 2,
   },
 });
